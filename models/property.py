@@ -1,17 +1,15 @@
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, ValidationError, model_validator
 from typing import List, Optional, Literal
 from datetime import datetime
-
 
 class ContractorDetails(BaseModel):
     contractor_name: str = Field(..., example="ABC Builders Pvt Ltd")
     contractor_contact: str = Field(..., example="+91-9876543210")
 
-
 class Property(BaseModel):
     property_title: str = Field(..., example="3BHK Luxury Apartment in Bandra West")
     
-    condition: Literal["New", "Old"] = Field(..., example="New")  # New or Old
+    condition: Literal["New", "Old"] = Field(..., example="New")
     category: str = Field(..., example="Villa")
     
     square_feet: int = Field(..., example=1800)
@@ -38,11 +36,8 @@ class Property(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
 
-    @root_validator
-    def check_contractor_for_old(cls, values):
-        condition = values.get("condition")
-        contractor_details = values.get("contractor_details")
-
-        if condition == "Old" and not contractor_details:
+    @model_validator(mode="after")
+    def validate_contractor_requirement(self) -> "Property":
+        if self.condition == "Old" and not self.contractor_details:
             raise ValueError("contractor_details are required for old properties")
-        return values
+        return self
