@@ -7,7 +7,7 @@ from schema.customer_schemas import list_customer_serial, individual_customer_se
 from schema.property_schemas import list_property_serial, individual_property_serial
 
 router = APIRouter()
- 
+
 # ------------------------ Customer Routes ------------------------
 
 @router.get("/customers", status_code=200)
@@ -18,6 +18,10 @@ async def get_customers():
 
 @router.post("/customers", status_code=201)
 async def add_customer(customer: Customer):
+    # Check for duplicate contact number
+    if customer_collection.find_one({"contact_number": customer.contact_number}):
+        raise HTTPException(status_code=400, detail="Customer with this contact number already exists.")
+
     result = customer_collection.insert_one(dict(customer))
     if result.inserted_id:
         return {"status": "success", "message": "Customer added successfully."}
@@ -48,7 +52,6 @@ async def update_customer(id: str, customer: Customer):
 
 @router.patch("/customers/assign/{id}")
 async def assign_customer(id: str, data: dict):
-    # data = { "assigned_to": "Salesperson A" }
     result = customer_collection.find_one_and_update(
         {"_id": ObjectId(id)}, {"$set": data}
     )
@@ -75,7 +78,14 @@ async def get_properties():
 
 @router.post("/properties", status_code=201)
 async def add_property(property: Property):
-    result = properties_collection.insert_one(dict(property))
+    data = dict(property)
+
+    # Add contractor details if old property
+    if property.condition == "Old":
+        if not data.get("contractor_details"):
+            raise HTTPException(status_code=400, detail="Contractor details required for old properties.")
+
+    result = properties_collection.insert_one(data)
     if result.inserted_id:
         return {"status": "success", "message": "Property added successfully."}
     raise HTTPException(status_code=500, detail="Failed to add property.")
@@ -105,7 +115,6 @@ async def update_property(id: str, property: Property):
 
 @router.patch("/properties/assign/{id}")
 async def assign_property_to_customer(id: str, data: dict):
-    # data = { "assigned_to_customer_id": "ObjectId" }
     result = properties_collection.find_one_and_update(
         {"_id": ObjectId(id)}, {"$set": data}
     )

@@ -1,15 +1,21 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from typing import List, Optional, Literal
 from datetime import datetime
+
+
+class ContractorDetails(BaseModel):
+    contractor_name: str = Field(..., example="ABC Builders Pvt Ltd")
+    contractor_contact: str = Field(..., example="+91-9876543210")
+
 
 class Property(BaseModel):
     property_title: str = Field(..., example="3BHK Luxury Apartment in Bandra West")
     
     condition: Literal["New", "Old"] = Field(..., example="New")  # New or Old
-    category: str = Field(..., example="Villa")  # Office, Villa, Apartment, Plot, etc.
+    category: str = Field(..., example="Villa")
     
     square_feet: int = Field(..., example=1800)
-    rate: int = Field(..., example=12000000)  # Total cost or rent amount
+    rate: int = Field(..., example=12000000)
 
     location: str = Field(..., example="Bandra West, Mumbai")
     
@@ -18,13 +24,25 @@ class Property(BaseModel):
     parking_options: List[Literal["Car", "Bike", "None"]] = Field(..., example=["Car", "Bike"])
     parking_capacity: Optional[List[str]] = Field(None, example=["1 Car", "2 Bikes"])
 
-    # Rental Specific (can be null for sale)
     allowed_for: Optional[List[Literal["Family", "Bachelor"]]] = Field(None, example=["Family"])
     family_members_allowed: Optional[int] = Field(None, example=5)
 
-    availability_status: str = Field(..., example="Available")  # Available, Sold, Rented, Upcoming, etc.
-    listed_by: Optional[str] = Field(None, example="agent_123")  # Or "owner_001"
+    availability_status: str = Field(..., example="Available")
+    listed_by: Optional[str] = Field(None, example="agent_123")
     created_by: Optional[str] = Field(None, example="admin_001")
+
+    owner_name: str = Field(..., example="Mr. Sharma")
+
+    contractor_details: Optional[ContractorDetails] = None
 
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = None
+
+    @root_validator
+    def check_contractor_for_old(cls, values):
+        condition = values.get("condition")
+        contractor_details = values.get("contractor_details")
+
+        if condition == "Old" and not contractor_details:
+            raise ValueError("contractor_details are required for old properties")
+        return values
