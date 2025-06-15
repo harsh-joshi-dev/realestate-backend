@@ -8,6 +8,8 @@ from schema.customer_schemas import list_customer_serial, individual_customer_se
 from schema.property_schemas import list_property_serial, individual_property_serial
 from schema.user_schemas import list_user_serial, individual_user_serial
 from models.reset_password import ResetPasswordRequest  # import your schema
+from models.user_update import UpdateUserTypeRequest
+from fastapi import Body
 
 router = APIRouter()
 
@@ -18,16 +20,35 @@ async def get_users():
     users = list_user_serial(users_collection.find())
     return {"status": "success", "data": users}
 
-
 @router.post("/users", status_code=201)
-async def create_user(user: User):
-    if users_collection.find_one({"phone": user.phone}):
-        raise HTTPException(status_code=400, detail="User with this phone number already exists.")
-    result = users_collection.insert_one(dict(user))
-    if result.inserted_id:
-        return {"status": "success", "message": "User created successfully."}
-    raise HTTPException(status_code=500, detail="Failed to create user.")
+async def create_user(user: User = Body(...)):
+    # Normalize phone number: strip spaces, enforce consistent format if needed
+    phone = user.phone.strip()
 
+    # Check if user already exists
+    existing_user = users_collection.find_one({"phone": phone})
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="User with this phone number already exists."
+        )
+
+    # Insert the user into the database
+    user_data = dict(user)
+    user_data["phone"] = phone  # ensure normalized phone is stored
+    result = users_collection.insert_one(user_data)
+
+    if result.inserted_id:
+        return {
+            "status": "success",
+            "message": "User created successfully.",
+            "user_id": str(result.inserted_id)
+        }
+
+    raise HTTPException(
+        status_code=500,
+        detail="Failed to create user due to internal server error."
+    )
 
 @router.get("/users/{id}", status_code=200)
 async def get_user(id: str):
@@ -60,13 +81,33 @@ async def delete_user(id: str):
 
 @router.post("/users/reset-password")
 async def reset_password(data: ResetPasswordRequest):
-    result = user_collection.find_one_and_update(
+    result = users_collection.find_one_and_update(
         {"phone": data.phone},
         {"$set": {"password": data.new_password}}
     )
     if result:
         return {"status": "success", "message": "Password reset successfully."}
     raise HTTPException(status_code=404, detail="User with this phone number not found.")
+
+@router.patch("/users/update-user-type")
+async def update_user_type(data: UpdateUserTypeRequest):
+    existing_user = users_collection.find_one({
+        "phone": data.phone,
+        "password": data.password
+    })
+
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found or incorrect password.")
+
+    result = users_collection.update_one(
+        {"_id": existing_user["_id"]},
+        {"$set": {"user_type": data.new_user_type}}
+    )
+
+    if result.modified_count == 1:
+        return {"status": "success", "message": "User type updated successfully."}
+
+    return {"status": "success", "message": "User type already set to the same value."}
 
 # ------------------------ Customer Routes ------------------------
 
