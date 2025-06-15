@@ -1,6 +1,11 @@
+import certifi
 from pymongo import MongoClient
 
-client = MongoClient("mongodb+srv://kellyharrisoninfo:1gNy7ZxN8VoQHDE9@project0.e1kmvyv.mongodb.net/?retryWrites=true&w=majority&appName=Project0")
+client = MongoClient(
+    "mongodb+srv://kellyharrisoninfo:1gNy7ZxN8VoQHDE9@project0.e1kmvyv.mongodb.net/?retryWrites=true&w=majority&appName=Project0",
+    tls=True,
+    tlsCAFile=certifi.where()
+)
 
 # Use one database
 db = client.realestate_db
