@@ -17,6 +17,7 @@ def individual_customer_serial(customer) -> dict:
         "parking_options": customer.get("parking_options"),
         "preferred_tenant_type": customer.get("preferred_tenant_type"),
         "family_members_count": customer.get("family_members_count"),
+        "city_name": customer.get("city_name"),
         "waiting_period": customer.get("waiting_period"),
         "created_by": customer.get("created_by"),
         "assigned_to": customer.get("assigned_to"),

@@ -24,6 +24,8 @@ class Customer(BaseModel):
     preferred_area: Optional[str] = Field(None, example="South Mumbai, Andheri East")
 
     waiting_period: Optional[str] = Field(None, example="1 Month")
+    
+    city_name: Optional[str] = Field(None, example="Delhi")
 
     # For rental preferences
     preferred_tenant_type: Optional[str] = Field(None, example=["Bachelor", "Married"])
