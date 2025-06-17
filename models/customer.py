@@ -21,7 +21,7 @@ class Customer(BaseModel):
     budget_max: Optional[int] = Field(None, example=5000000)
 
     special_requirements: Optional[str] = Field(None, example="Near hospital, top floor, garden view")
-    preferred_area: Optional[str] = Field(None, example="South Mumbai, Andheri East")
+    preferred_area: Optional[List[str]] = Field(None, example="South Mumbai, Andheri East")
 
     waiting_period: Optional[str] = Field(None, example="1 Month")
     
