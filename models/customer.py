@@ -11,11 +11,11 @@ class Customer(BaseModel):
     residential_property_type: Optional[str] = Field(None, example="Apartment")  # Apartment, Villa, etc.
     commercial_property_type: Optional[str] = Field(None, example="Office")      # Office, Shop, etc.
 
-    intent: List[Literal["Rent", "Buy"]] = Field(..., example=["Rent", "Buy"])
-    property_condition: List[Literal["New", "Resale"]] = Field(..., example=["New", "Resale"])
+    intent: Optional[str] = Field(..., example=["Rent", "Buy"])
+    property_condition: Optional[str] = Field(..., example=["New", "Resale"])
 
-    furnished_status: List[Literal["Furnished", "Semi-Furnished", "Unfurnished"]] = Field(..., example=["Furnished", "Unfurnished"])
-    parking_options: List[Literal["Car Parking", "Bike Parking", "No Parking"]] = Field(..., example=["Car Parking", "Bike Parking"])
+    furnished_status: Optional[str] = Field(..., example=["Furnished", "Unfurnished"])
+    parking_options: Optional[str] = Field(..., example=["Car Parking", "Bike Parking"])
 
     budget_min: Optional[int] = Field(None, example=2500000)
     budget_max: Optional[int] = Field(None, example=5000000)
