@@ -26,7 +26,7 @@ class Customer(BaseModel):
     waiting_period: Optional[str] = Field(None, example="1 Month")
 
     # For rental preferences
-    preferred_tenant_type: Optional[List[Literal["Bachelor", "Married"]]] = Field(None, example=["Bachelor", "Married"])
+    preferred_tenant_type: Optional[str] = Field(None, example=["Bachelor", "Married"])
     family_members_count: Optional[int] = Field(None, example=4)
 
     # Meta
