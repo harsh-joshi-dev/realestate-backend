@@ -13,6 +13,26 @@ from fastapi import Body
 
 router = APIRouter()
 
+@router.post("/users/login")
+async def login_user(data: dict = Body(...)):
+    phone = data.get("phone")
+    password = data.get("password")
+
+    if not phone or not password:
+        raise HTTPException(status_code=400, detail="Phone and password are required.")
+
+    # Check user by phone and password
+    user = users_collection.find_one({"phone": phone.strip(), "password": password})
+    
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid phone or password.")
+
+    return {
+        "status": "success",
+        "message": "Login successful.",
+        "user": individual_user_serial(user)
+    }
+
 # ------------------------ User Routes ------------------------
 
 @router.get("/users", status_code=200)
