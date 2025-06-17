@@ -10,20 +10,16 @@ from schema.user_schemas import list_user_serial, individual_user_serial
 from models.reset_password import ResetPasswordRequest  # import your schema
 from models.user_update import UpdateUserTypeRequest
 from fastapi import Body
+from models.user_login import UserLogin
 
 router = APIRouter()
 
 @router.post("/users/login")
-async def login_user(data: dict = Body(...)):
-    phone = data.get("phone")
-    password = data.get("password")
+async def login_user(data: UserLogin):
+    phone = data.phone.strip()
+    password = data.password
 
-    if not phone or not password:
-        raise HTTPException(status_code=400, detail="Phone and password are required.")
-
-    # Check user by phone and password
-    user = users_collection.find_one({"phone": phone.strip(), "password": password})
-    
+    user = users_collection.find_one({"phone": phone, "password": password})
     if not user:
         raise HTTPException(status_code=401, detail="Invalid phone or password.")
 
