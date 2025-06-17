@@ -7,7 +7,7 @@ class Customer(BaseModel):
     caste: Optional[str] = Field(None, example="Brahmin")
     contact_number: int = Field(..., example=9876543210)
 
-    preferred_bhk: Optional[str] = Field(None, example="2BHK")
+    preferred_bhk: Optional[List[str]] = Field(None, example="2BHK")
     residential_property_type: Optional[str] = Field(None, example="Apartment")  # Apartment, Villa, etc.
     commercial_property_type: Optional[str] = Field(None, example="Office")      # Office, Shop, etc.
 
